@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,49 +9,49 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private GameObject buttonStart;
     [SerializeField] private GameObject buttonRestart;
-    private int scorePoints = 0;
-    private float timerCount = 60;
-    private SpawnManager spawnManager;
-    public bool isGameStarted = false;
+    private int _scorePoints;
+    private float _timerCount = 60;
+    private SpawnManager _spawnManager;
+    public bool IsGameStarted { get; private set; }
 
     // Start is called before the first frame update
     void Start()
     {
-        spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
+        _spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
     }
 
     private void Update()
     {
-        if (timerCount > 0 && isGameStarted)
+        if (_timerCount > 0 && IsGameStarted)
         {
-            timerCount -= Time.deltaTime;
-            timerText.SetText("Time: " + Mathf.RoundToInt(timerCount));
+            _timerCount -= Time.deltaTime;
+            timerText.SetText("Time: " + Mathf.RoundToInt(_timerCount));
         }
-        else if (timerCount < 0)
+        else if (_timerCount < 0)
         {
-            isGameStarted = false;
+            IsGameStarted = false;
             gameOverText.gameObject.SetActive(true);
             buttonRestart.SetActive(true);
-            spawnManager.SpawnObjects(false);
+            _spawnManager.SpawnObjects(false);
         }
     }
 
     public void AddScore()
     {
-        scorePoints++;
-        scoreText.SetText("Score: " + scorePoints);
+        _scorePoints++;
+        scoreText.SetText("Score: " + _scorePoints);
     }
 
     public void StartGame()
     {
-        isGameStarted = true;
-        scorePoints = 0;
-        scoreText.SetText("Score: " + scorePoints);
-        timerText.SetText("Time: " + Mathf.RoundToInt(timerCount));
+        IsGameStarted = true;
+        _scorePoints = 0;
+        scoreText.SetText("Score: " + _scorePoints);
+        timerText.SetText("Time: " + Mathf.RoundToInt(_timerCount));
         scoreText.gameObject.SetActive(true);
         timerText.gameObject.SetActive(true);
         buttonStart.SetActive(false);
-        spawnManager.SpawnObjects(true);
+        _spawnManager.SpawnObjects(true);
         titleText.gameObject.SetActive(false);
     }
 
@@ -62,23 +59,23 @@ public class GameManager : MonoBehaviour
     {
         buttonRestart.SetActive(false);
         gameOverText.gameObject.SetActive(false);
-        timerCount = 60;
-        scorePoints = 0;
-        scoreText.SetText("Score: " + scorePoints);
-        timerText.SetText("Time: " + Mathf.RoundToInt(timerCount));
+        _timerCount = 60;
+        _scorePoints = 0;
+        scoreText.SetText("Score: " + _scorePoints);
+        timerText.SetText("Time: " + Mathf.RoundToInt(_timerCount));
         scoreText.gameObject.SetActive(true);
         timerText.gameObject.SetActive(true);
-        spawnManager.SpawnObjects(true);
-        isGameStarted = true;
+        _spawnManager.SpawnObjects(true);
+        IsGameStarted = true;
         DestroyAllWaste();
     }
 
     private void DestroyAllWaste()
     {
         GameObject[] array = GameObject.FindGameObjectsWithTag("Waste");
-        for (int i = 0; i < array.Length; i++)
+        foreach (var t in array)
         {
-            Destroy(array[i]);
+            Destroy(t);
         }
     }
 }

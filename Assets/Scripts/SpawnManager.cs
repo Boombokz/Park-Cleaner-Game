@@ -1,28 +1,26 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    [SerializeField] GameObject[] spawnObjects;
+    [SerializeField] private GameObject[] spawnObjects;
     [SerializeField] private float spawnTime = 2;
 
     public void SpawnObjects(bool spawn)
     {
         if (spawn)
         {
-            StartCoroutine(SpawnRoutine(spawn));
+            StartCoroutine(SpawnRoutine());
         }
         else
         {
             StopAllCoroutines();
         }
-
     }
 
-    IEnumerator SpawnRoutine(bool spawn)
+    private IEnumerator SpawnRoutine()
     {
-        while (spawn)
+        while (true)
         {
             yield return new WaitForSeconds(spawnTime);
 

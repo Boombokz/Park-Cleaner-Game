@@ -1,104 +1,99 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 10;
-    [SerializeField] Transform waste;
-    [SerializeField] Transform arms;
-    [SerializeField] Transform posOverHead;
+    [SerializeField] private Transform waste;
+    [SerializeField] private Transform arms;
+    [SerializeField] private Transform posOverHead;
     [SerializeField] private Transform targetPos;
     [SerializeField] private float xRange;
     [SerializeField] private float zRange;
 
-    private bool isWasteInHands = false;
-    private bool isWasteFlying = false;
-    private float t = 0;
+    private bool _isWasteInHands;
+    private bool _isWasteFlying;
+    private float _t;
 
-    private GameManager gameManager;
+    private GameManager _gameManager;
 
     private void Start()
     {
-        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+        _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (gameManager.isGameStarted)
+        if (!_gameManager.IsGameStarted) return;
+        MovePlayer();
+        if (_isWasteInHands)
         {
-            MovePlayer();
-            if (isWasteInHands)
+            if (waste != null)
             {
-                if (waste != null)
-                {
-                    waste.position = posOverHead.position;
-                }
-                else
-                {
-                    arms.localEulerAngles = Vector3.right * 0;
-                }
-                arms.localEulerAngles = Vector3.right * 180;
-                transform.LookAt(targetPos.parent.position);
+                waste.position = posOverHead.position;
             }
             else
             {
                 arms.localEulerAngles = Vector3.right * 0;
             }
 
-            if (Input.GetKeyUp(KeyCode.Space) && isWasteInHands)
-            {
-                isWasteFlying = true;
-                isWasteInHands = false;
-                t = 0;
-            }
-
-            if (isWasteFlying)
-            {
-                t += Time.deltaTime;
-                float duration = 0.5f;
-                float t01 = t / duration;
-
-                Vector3 a = posOverHead.position;
-                Vector3 b = targetPos.position;
-                Vector3 pos = Vector3.Lerp(a, b, t01);
-
-                //move in arc
-                Vector3 arc = Vector3.up * 5 * Mathf.Sin(t01 * 3.14f);
-
-                if (waste != null)
-                {
-                    waste.position = pos + arc;
-                }
-
-                if (t01 >= 1)
-                {
-                    isWasteFlying = false;
-                    gameManager.AddScore();
-                }
-            }
+            arms.localEulerAngles = Vector3.right * 180;
+            transform.LookAt(targetPos.parent.position);
+        }
+        else
+        {
+            arms.localEulerAngles = Vector3.right * 0;
         }
 
+        if (Input.GetKeyUp(KeyCode.Space) && _isWasteInHands)
+        {
+            _isWasteFlying = true;
+            _isWasteInHands = false;
+            _t = 0;
+        }
+
+        if (!_isWasteFlying) return;
+        _t += Time.deltaTime;
+        const float duration = 0.5f;
+        float t01 = _t / duration;
+
+        Vector3 a = posOverHead.position;
+        Vector3 b = targetPos.position;
+        Vector3 pos = Vector3.Lerp(a, b, t01);
+
+        //move in arc
+        Vector3 arc = Vector3.up * (5 * Mathf.Sin(t01 * 3.14f));
+
+        if (waste != null)
+        {
+            waste.position = pos + arc;
+        }
+
+        if (!(t01 >= 1)) return;
+        _isWasteFlying = false;
+        _gameManager.AddScore();
     }
 
-    void MovePlayer()
+    private void MovePlayer()
     {
         float xMovement = Input.GetAxisRaw("Horizontal");
         float zMovement = Input.GetAxisRaw("Vertical");
         Vector3 direction = new Vector3(xMovement, 0, zMovement);
 
-        transform.position += direction.normalized * Time.deltaTime * moveSpeed;
-        transform.LookAt(transform.position + direction);
+        var transform1 = transform;
+        var position = transform1.position;
+        position += direction.normalized * (Time.deltaTime * moveSpeed);
+        transform1.position = position;
+        transform.LookAt(position + direction);
 
         ControlPlayerBounds();
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isWasteInHands && gameManager.isGameStarted)
+        if (!_isWasteInHands && _gameManager.IsGameStarted)
         {
-            isWasteInHands = true;
+            _isWasteInHands = true;
             waste = other.gameObject.transform;
         }
     }
